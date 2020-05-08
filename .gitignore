@@ -1,2 +1,16 @@
+# PyCharm IDE Temporary Files
 .idea
 venv
+
+# Test Text File
+WhatsAppText.txt
+
+# Output
+Output.pdf
+temp-output
+
+# Temporary Files
+internal/templates/images
+__pycache__
+*.bak
+Temp.html

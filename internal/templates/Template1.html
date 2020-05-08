@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>:Name1: and :Name2: Poster</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,200;1,400&amp;display=swap"
+      rel="stylesheet">
+    <style>
+      @page {
+  			size: A4;
+        margin: 0mm;
+			}
+      
+      body 
+      {
+      	background: rgb(0,0,0);
+				
+        font-family: 'IBM Plex Sans', sans-serif;
+    		color: #FFFFFF;
+        
+        margin-top: 80px;
+  			margin-bottom: 80px;
+  			margin-right: 80px;
+  			margin-left: 80px;
+      }
+      
+      div#first-title
+      {
+      	font-size: 50px;
+        text-align: center;
+      }
+      
+      div#second-title
+      {
+        font-size: 26px;
+        text-align:center;
+      }
+      
+      .divider
+			{
+        position: relative;
+				margin-top: 90px;
+				height: 1px;
+			}
+      
+      .div-transparent:before
+			{
+				content: "";
+				position: absolute;
+				top: 0;
+				left: 5%;
+				right: 5%;
+				width: 90%;
+				height: 1px;
+				background-image: linear-gradient(to right, transparent, rgb(255,255,255), transparent);
+			}
+      
+      .container
+      {
+        text-align: center;
+      }
+      
+      .container .wordcloud-box 
+      { 
+        width: 540px; 
+        margin: 50px auto; 
+        display: table;
+      } 
+      
+      .container .wordcloud-box .wordcloud-box-row 
+      { 
+        display:table-row; 
+      } 
+      
+      .container .wordcloud-box .box-cell 
+      { 
+        display:table-cell; 
+        width:50%; 
+        padding:10px; 
+        text-align:center; 
+      } 
+      
+      .container .frequency-box
+      {
+        margin: 50px auto; 
+      }
+      
+		</style>
+  </head>
+  <body>
+    <div id="first-title">:Name1: and :Name2:</div>
+    <div id="second-title">:Years: Years and :Messages: Messages Later</div>
+    <div class="container">
+      <div class="wordcloud-box">
+        <div class="wordcloud-box-row">
+          <div class="box-cell box1"> <img src="images/:FullName1:WordCloud.png"
+              alt=":Name1: WordCloud" style="width: 466px; height: 466px;">
+            :Name1:'s Most Used Words</div>
+          <div class="box-cell box2"> <img src="images/:FullName2:WordCloud.png"
+              alt=":Name2: WordCloud" style="width: 466px; height: 466px;">
+            :Name2:'s Most Used Words </div>
+        </div>
+      </div>
+    </div>
+    <div class="divider div-transparent"></div>
+    <div class="container">
+      <div class="frequency-box"> <img src="images/TextFrequency.png" alt="TextFrequency"
+          style="width: 1542px; height: 257px;">Messages Per Time of Day </div>
+    </div>
+    <div class="divider div-transparent"></div>
+  </body>
+</html>
