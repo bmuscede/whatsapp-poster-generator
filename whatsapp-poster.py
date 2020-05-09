@@ -3,6 +3,9 @@ import argparse
 import sys
 import os
 from os import path
+import locale
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
 
 from internal.converter import ConvertToTextualCSV
 from internal.converter import ConvertToEmojiCSV
@@ -17,6 +20,8 @@ from internal.canalysis import GenerateMessageProportion
 from internal.canalysis import GenerateMessageSentimateProportion
 from internal.canalysis import GenerateSentimentFrequency
 import pandas as pd
+
+locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 
 def CreateValueDictionary(df):
     valueDict = {}
@@ -34,8 +39,19 @@ def CreateValueDictionary(df):
 
     # Get the number of messages.
     numMessages = df.shape[0]
-    valueDict['Messages'] = str(numMessages)
+    valueDict['Messages'] = str(f'{numMessages:n}')
 
+    # Get the number of years the messages take place over.
+    dateFormat = '%Y-%m-%d'
+    minDate = datetime.strptime(df['date'].min(), dateFormat)
+    maxDate = datetime.strptime(df['date'].max(), dateFormat)
+    years = relativedelta(maxDate, minDate).years
+    months = relativedelta(maxDate, minDate).months
+    if months >= 5:
+        years += 1
+    valueDict['Years'] = str(years)
+
+    # Get the number of years the chat is.
     return valueDict
 
 # Set up our argument parser to handle the user 

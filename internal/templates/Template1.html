@@ -60,19 +60,19 @@
         text-align: center;
       }
       
-      .container .wordcloud-box 
+      .container .split-box 
       { 
         width: 540px; 
         margin: 50px auto; 
         display: table;
       } 
       
-      .container .wordcloud-box .wordcloud-box-row 
+      .container .split-box .split-box-row 
       { 
         display:table-row; 
       } 
       
-      .container .wordcloud-box .box-cell 
+      .container .split-box .box-cell 
       { 
         display:table-cell; 
         width:50%; 
@@ -80,9 +80,18 @@
         text-align:center; 
       } 
       
+      .container .split-box .bottom-cell 
+      { 
+        display:table-cell; 
+        width:33%; 
+        padding:10px; 
+        text-align:center; 
+      } 
+      
       .container .frequency-box
       {
         margin: 50px auto; 
+        display: table;
       }
       
 		</style>
@@ -91,8 +100,8 @@
     <div id="first-title">:Name1: and :Name2:</div>
     <div id="second-title">:Years: Years and :Messages: Messages Later</div>
     <div class="container">
-      <div class="wordcloud-box">
-        <div class="wordcloud-box-row">
+      <div class="split-box">
+        <div class="split-box-row">
           <div class="box-cell box1"> <img src="images/:FullName1:WordCloud.png"
               alt=":Name1: WordCloud" style="width: 466px; height: 466px;">
             :Name1:'s Most Used Words</div>
@@ -105,8 +114,23 @@
     <div class="divider div-transparent"></div>
     <div class="container">
       <div class="frequency-box"> <img src="images/TextFrequency.png" alt="TextFrequency"
-          style="width: 1542px; height: 257px;">Messages Per Time of Day </div>
+          style="width: 1542px; height: 257px; display:block; margin-bottom: 15px;">
+        Messages Per Time of Day </div>
     </div>
     <div class="divider div-transparent"></div>
+    <div class="container">
+      <div class="split-box">
+        <div class="split-box-row">
+          <div class="bottom-cell box1"> <img src="images/SentimentProportions.png"
+              alt="SentimentProportions" style="width: 466px; height: 466px;">
+            Sentiment of All Messages Sent</div>
+          <div class="bottom-cell box2"> <img src="images/:FullName2:WordCloud.png"
+              alt=":Name2: WordCloud" style="width: 466px; height: 466px;"> Favourite Words By Person
+          </div>
+          <div class="bottom-cell box3"> <img src="images/EmojiWordCloud.png" alt="EmojiWordCloud"
+              style="width: 466px; height: 466px;"> Common Emojis Used </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

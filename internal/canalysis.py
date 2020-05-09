@@ -28,34 +28,38 @@ def GenerateTextingFrequency(df, outputDirectory):
     plt.box(on=False)
     mFreq.sort_values(by="time", ascending=[False])["message"].plot.line(linewidth="7.0")
 
-    # Prepare the label.
-    plt.xticks(rotation=50, color='white', fontsize=24)
+    # Remove the tick markers.
     ax = plt.gca()
     ax.tick_params(axis='both', length=0)
     ax.set_xlabel('')
     ax.set_ylabel('')
-    plt.axhline(y=1500, color='w', linestyle='-', linewidth=3, visible=True)
-    
-    # Remove the first time (since that will be 00:00)
-    #xticks = ax.xaxis.get_major_ticks()
-    #xticks[0].label1.set_visible(False)
-    for tick in ax.get_xticklabels():
-        tick.set_color('white')
-        tick.set_fontsize(24)
+
+    # Set the major tick here to be invisible.
+    xticks = ax.xaxis.get_major_ticks()
+    xticks[0].label1.set_visible(False)
+
+    # Set all minor ticks to be large.
+    # For some reason, the time other than the first is considered to be minor.
+    ax.tick_params(which='minor', length=0)
+    for tick in ax.xaxis.get_minor_ticks():
+        tick.label1.set_color('white')
+        tick.label1.set_fontsize(16)
 
     # Now remove all but the second highest y axis tick.
-    curTick=-1
+    curTick = -1
     yticks = ax.yaxis.get_major_ticks()
+    ylabels=ax.get_yticks().tolist()
     for tick in yticks:
         curTick += 1
         if curTick + 3 == len(yticks):
+            plt.axhline(y=int(ylabels[curTick]), color='w', linestyle='-', linewidth=3, visible=True)
             tick.label1.set_visible(True)
             tick.label1.set_color('white')
             tick.label1.set_fontsize(16)
-
             continue
         tick.label1.set_visible(False)
 
+    # Output the diagram.
     plt.tight_layout(pad=0)
     plt.savefig(outputDirectory+"/TextFrequency.png", transparent=True)
     return True
@@ -74,22 +78,33 @@ def GenerateMessageSentimateProportion(df, outputDirectory):
     goodSentiment = df['goodSentiment'].sum()
     badSentiment = df['badSentiment'].sum()
     neutralSentiment = df['neutralSentiment'].sum()
+    total = goodSentiment + badSentiment + neutralSentiment
 
+    # Get percentages.
+    goodPercentage = "{:.2f}".format((goodSentiment / total) * 100)
+    badPercentage = "{:.2f}".format(badSentiment / total * 100)
+    neutralPercentage = "{:.2f}".format((neutralSentiment / total) * 100)
+
+    labelIndex = ['Positive (' + goodPercentage + '%)', 'Negative (' + badPercentage + '%)', 'Neutral (' + neutralPercentage + '%)']
     sentimentDF = pd.DataFrame({'sentiment': [goodSentiment, badSentiment, neutralSentiment]},
-                               index=['Positive', 'Negative', 'Neutral'])
+                               index=labelIndex)
 
     # Create the initial pie chart.
-    plt.figure(figsize=(15,10))
-    plt.ylabel("Number of Messages")
-    sentimentDF.plot.pie(y='sentiment')
+    plt.figure(figsize=(20,20), frameon=False)
+    ax = sentimentDF.plot.pie(y='sentiment', fontsize=0, wedgeprops={"edgecolor":"k", 'linewidth': 1.25, 'linestyle': 'solid', 'antialiased': True})
 
-    # Add a circle in the middle to plot.
-    centreCircle = plt.Circle((0, 0), 0.75, color='black', fc='white', linewidth=1.25)
-    fig = plt.gcf()
-    fig.gca().add_artist(centreCircle)
+    # Configure the legend.
+    patches, labels = ax.get_legend_handles_labels()
+    ax.legend(patches, labels, loc=10)
+    ax.set_ylabel('')
 
-    plt.savefig(outputDirectory+"/SentimentProportions.png")
+    # Create a donut.
+    plt.setp(ax.patches, width=0.25)
+    ax.set_aspect("equal")
 
+    # Output the diagram.
+    plt.tight_layout(pad=0)
+    plt.savefig(outputDirectory+"/SentimentProportions.png", transparent=True)
     return True
 
 def GenerateSentimentFrequency(df, outputDirectory):
