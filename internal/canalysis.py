@@ -13,8 +13,28 @@ from csv import reader, writer
 def CleanMessage(message): 
     return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t]) |(\w+:\/\/\S+)", " ", message).replace("\\n", " ").replace("\\t", "").split()) 
 
-def GetMessageSentiment(message): 
-    # Create TextBlob object of passed message 
+def LoadCommonWords():
+    # In the current directory. check for a common words file.
+    wordList = ['n']
+
+    try:
+        wordFile = open('internal/common-words.txt', "r")
+    except IOError:
+        return wordList
+
+    for line in wordFile:
+        line = line.strip()
+        if len(line) == 0:
+            continue
+
+        wordList.append(line)
+
+    wordFile.close()
+    return wordList
+
+
+def GetMessageSentiment(message):
+    # Create TextBlob object of passed message
     message = CleanMessage(message)
     analysis = TextBlob(message) 
     return analysis.sentiment.polarity
@@ -122,4 +142,57 @@ def GenerateSentimentFrequency(df, outputDirectory):
     plt.ylabel("Number of Messages")
     plt.savefig(outputDirectory+"/SentimentFrequency.png")
 
+    return True
+
+def GenerateWordUseFrequency(df, outputDirectory):
+    commonWords = LoadCommonWords()
+
+    # First, tokenize by line.
+    df['words'] = df.message.str.strip().str.split('[\W_]+')
+
+    # Now create a new data frame with persons and words.
+    rows = list()
+    for row in df[['person', 'words']].iterrows():
+        r = row[1]
+        for word in r.words:
+            rows.append((r.person, word))
+    words = pd.DataFrame(rows, columns=['person', 'word'])
+    words = words[words.word.str.len() > 0]
+    words['word'] = words.word.str.lower()
+
+    # Now count the words per person.
+    counts = words.groupby('person') \
+        .word.value_counts() \
+        .to_frame() \
+        .rename(columns={'word': 'count'})
+
+    # Remove the counts for common words. Get a total count.
+    counts = counts.drop(index=commonWords, level=1)
+    totalCount = counts.groupby(level=1).sum().nlargest(30, columns='count')
+
+    # Generate the person data.
+    names = []
+    data = []
+
+    # Generate data for our words.
+    topWords = list(totalCount.index.values)
+    for person in counts.groupby('person'):
+        names.append(person[0])
+        curData = list()
+
+        pD = person[1].reset_index(level=0, drop=True)
+        for top in topWords:
+            item = pD.loc[top]
+            curData.append(item['count'])
+
+        data.append(curData)
+
+    # Generate the figure.
+    plt.figure(figsize=(20,40))
+    wordDf = pd.DataFrame({names[0]: data[0], names[1]: data[1]}, index=topWords)
+    wordDf.plot.barh()
+
+    # Output the diagram.
+    plt.tight_layout(pad=0)
+    plt.savefig(outputDirectory+"/WordFrequency.png")
     return True

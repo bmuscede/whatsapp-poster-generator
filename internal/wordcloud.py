@@ -1,6 +1,5 @@
 # Load all necessary libraries.
 import numpy as np
-import pandas as pd
 import string
 from os import path
 from os import getcwd
@@ -10,40 +9,44 @@ from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import urllib
 import requests
 
-import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+
+import random
+from palettable.colorbrewer.sequential import Reds_9
+from palettable.colorbrewer.sequential import Purples_9
 
 from internal.converter import CleanMessage
 
 # The maximum emojis in a file.
 MAX_EMOJI = 15
 
+def red_colour_func(word, font_size, position, orientation, random_state=None, **kwargs):
+    return tuple(Reds_9.colors[random.randint(2,8)])
+
+def purple_colour_func(word, font_size, position, orientation, random_state=None, **kwargs):
+    return tuple(Purples_9.colors[random.randint(2,8)])
+
 def GenerateWordCloud(df, outputDirectory):
     persons = df.groupby("person")
     for curPerson in persons:
         allText = ""
         for curMessage in curPerson[1].message:
-            allText += CleanMessage(curMessage)
+            allText += CleanMessage(curMessage).lower() + " "
 
         strippedName = curPerson[0].replace(" ", "")
 
         # Get a mask to use.
-        mask = np.array(Image.open(requests.get('https://clipartart.com/images/clipart-gold-heart-1.png', stream=True).raw))
+        mask = np.array(Image.open(requests.get('http://clipart-library.com/images/6ip6RgkKT.png', stream=True).raw))
 
         # Create and generate a word cloud image.
-        wordcloud = WordCloud(width=400, height=400, mask=mask, background_color=None, mode="RGBA").generate(allText)
-
-        # Display the generated image.
-        plt.figure( figsize=(20,20) )
-        plt.imshow(wordcloud, interpolation='bilinear')
-        plt.axis("off")
-        plt.tight_layout(pad=0)
-        plt.savefig(outputDirectory+"/"+strippedName+"WordCloud.png", transparent=True)
+        wordcloud = WordCloud(width=1200, height=1200, mask=mask, background_color="rgba(255, 255, 255, 0)", mode="RGBA").generate(allText)
+        wordcloud.recolor(color_func=red_colour_func, random_state=3)
+        wordcloud.to_file(outputDirectory+"/"+strippedName+"WordCloud.png")
 
     return True
 
 def GenerateEmojiWordCloud(emjoiCSV, outputDirectory):
-    # get data directory (using getcwd() is needed to support running example in generated IPython notebook)
+    # Get data directory (using getcwd() is needed to support running example in generated IPython notebook)
     d = path.dirname(__file__) if "__file__" in locals() else getcwd()
 
     # Start by taking the emjoi CSV and reading it in.
@@ -80,10 +83,10 @@ def GenerateEmojiWordCloud(emjoiCSV, outputDirectory):
 
     # With the emojis in place, create the word cloud.
     font = path.join(d, 'fonts', 'Symbola', 'Symbola.ttf')
-    wordcloud = WordCloud(width=400, height=400, background_color=None, mode="RGBA", font_path=font, regexp=emoji, collocations=False).generate(emojiText)
+    wordcloud = WordCloud(width=1200, height=1200, background_color=None, mode="RGBA", font_path=font, regexp=emoji, collocations=False).generate(emojiText)
 
     # Display the generated image.
-    plt.figure(figsize=(20, 20))
+    plt.figure(figsize=(50, 50))
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis("off")
     plt.tight_layout(pad=0)

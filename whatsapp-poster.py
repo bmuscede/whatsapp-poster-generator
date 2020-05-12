@@ -19,6 +19,7 @@ from internal.canalysis import GenerateTextingFrequency
 from internal.canalysis import GenerateMessageProportion
 from internal.canalysis import GenerateMessageSentimateProportion
 from internal.canalysis import GenerateSentimentFrequency
+from internal.canalysis import GenerateWordUseFrequency
 import pandas as pd
 
 locale.setlocale(locale.LC_ALL, 'en_US.utf8')
@@ -108,6 +109,12 @@ if not status:
 status = GenerateEmojiWordCloud(args.temp + "/emoji.csv", args.temp)
 if not status:
     print("Failure generating emoji-based word cloud! Please try again.", file=sys.stderr)
+    exit(2)
+
+print("Generating the number of times the most common words are used...")
+GenerateWordUseFrequency(df, args.temp)
+if not status:
+    print("Failure generating word use graph! Please try again.", file=sys.stderr)
     exit(2)
 
 # Do text time analysis.
