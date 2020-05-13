@@ -1,14 +1,10 @@
 # Load all necessary libraries.
-import numpy as np
 import pandas as pd
 
 from textblob import TextBlob 
 import re 
 
-import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-
-from csv import reader, writer
 
 def CleanMessage(message): 
     return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t]) |(\w+:\/\/\S+)", " ", message).replace("\\n", " ").replace("\\t", "").split()) 
@@ -82,16 +78,7 @@ def GenerateTextingFrequency(df, outputDirectory):
     # Output the diagram.
     plt.tight_layout(pad=0)
     plt.savefig(outputDirectory+"/TextFrequency.png", transparent=True)
-    return True
-
-def GenerateMessageProportion(df, outputDirectory):
-    persons = df.groupby("person").count()
-
-    plt.figure(figsize=(15,10))
-    plt.ylabel("Number of Messages")
-    persons.plot.pie(y='message')
-    plt.savefig(outputDirectory+"/TextProportions.png")
-
+    plt.close()
     return True
 
 def GenerateMessageSentimateProportion(df, outputDirectory):
@@ -125,23 +112,7 @@ def GenerateMessageSentimateProportion(df, outputDirectory):
     # Output the diagram.
     plt.tight_layout(pad=0)
     plt.savefig(outputDirectory+"/SentimentProportions.png", transparent=True)
-    return True
-
-def GenerateSentimentFrequency(df, outputDirectory):
-    # Drop all but the sentiment.
-    df = df.drop('date', 1).drop('person', 1).drop('message', 1)
-    df.time = pd.to_datetime(df.time)
-    mFreq = df.set_index('time').groupby([pd.Grouper(freq='60Min')]).agg('sum')
-
-    # Create the plot.
-    plt.figure(figsize=(15,10))
-    mFreq.sort_values(by="time", ascending=[False]).plot.bar()
-    plt.xticks(rotation=50)
-
-    plt.xlabel("Time")
-    plt.ylabel("Number of Messages")
-    plt.savefig(outputDirectory+"/SentimentFrequency.png")
-
+    plt.close()
     return True
 
 def GenerateWordUseFrequency(df, outputDirectory):
@@ -182,17 +153,54 @@ def GenerateWordUseFrequency(df, outputDirectory):
 
         pD = person[1].reset_index(level=0, drop=True)
         for top in topWords:
-            item = pD.loc[top]
-            curData.append(item['count'])
+            try:
+                item = pD.loc[top]
+                curData.append(item['count'])
+            except KeyError:
+                curData.append(0)
 
         data.append(curData)
 
-    # Generate the figure.
-    plt.figure(figsize=(20,40))
-    wordDf = pd.DataFrame({names[0]: data[0], names[1]: data[1]}, index=topWords)
-    wordDf.plot.barh()
+    # Get the max count for both datasets.
+    xmax = 0
+    dataOne = max(data[0])
+    dataTwo = max(data[1])
+    if dataOne > dataTwo:
+        xmax = dataOne
+    else:
+        xmax = dataTwo
 
-    # Output the diagram.
+
+    # Generate the figure.
+    plt.figure(figsize=(50, 50), frameon=False)
+    fig, axes = plt.subplots(ncols=2, sharey=True)
+    axes[0].barh(topWords, data[0], align='center', color='#ef3b2c', edgecolor='#67000d', zorder=10)
+    axes[1].barh(topWords, data[1], align='center', color='#807dba', edgecolor='#3f007d', zorder=10)
+
+    # Configure the pyramid.
+    axes[0].invert_xaxis()
+    axes[0].set(yticks=topWords, yticklabels=[])
+    for yloc in topWords:
+        axes[0].annotate(yloc, (0.5, yloc), xycoords=('figure fraction', 'data'),
+                         ha='center', va='center')
+    axes[0].yaxis.tick_right()
+
+    # Remove all spines.
+    for ax in axes:
+        ax.tick_params(axis='y', length=0)
+        ax.tick_params(axis='y', length=0)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+
+    for ax in axes.flat:
+        ax.margins(0.03)
+    fig.subplots_adjust(wspace=0.09)
+
+    # Output the final figure.
     plt.tight_layout(pad=0)
-    plt.savefig(outputDirectory+"/WordFrequency.png")
+    plt.xlim(0, xmax)
+    plt.savefig(outputDirectory + "/WordFrequency.png", transparent=True)
+    plt.close()
     return True

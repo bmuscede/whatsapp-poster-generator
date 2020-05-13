@@ -129,6 +129,42 @@ def ConvertToTextualCSV(inputPath, outputPath):
 
     return True
 
+def GenerateEmojiCSVFromDF(df, outputPath):
+    try:
+        waOut = open(outputPath, "w", encoding='utf-16')
+    except IOError:
+        print("Could not open output file"+outputPath+" for writing! Please select a proper output file.")
+        return False
+
+    # Generate contents.
+    allText = ""
+    for curMessage in df.message:
+        allText += curMessage
+
+    # Write the header to the output.
+    waOut.write("emoji\tfrequency\n")
+
+    emojiMap = {}
+
+    # Iterate and find the emojis.
+    for c in allText:
+        if isEmoji(c):
+            if c in emojiMap:
+                emojiMap[c] += 1
+            else:
+                emojiMap[c] = 1
+
+    # Sort map by incidence number.
+    emojiMap = {k: v for k, v in sorted(emojiMap.items(), key=lambda item: item[1])}
+
+    # Iterate through our emoji map and write out.
+    for emojiItem in emojiMap:
+        waOut.write(emojiItem + "\t" + str(emojiMap[emojiItem]) + "\n")
+
+    # Close for writing.
+    waOut.close()
+    return True
+
 def ConvertToEmojiCSV(inputPath, outputPath):
     try:
         waFile = open(inputPath, "r", encoding='utf-8')

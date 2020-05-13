@@ -78,6 +78,13 @@ def GenerateEmojiWordCloud(emjoiCSV, outputDirectory):
         if lineCount == MAX_EMOJI:
             break
 
+    # Check if there's nothing to output.
+    if not len(emojiText):
+        plt.figure(figsize=(50, 50))
+        plt.savefig(outputDirectory + "/EmojiWordCloud.png", transparent=True)
+        plt.close()
+        return True
+
     # Generate an emoji regex so the wordcloud can detect.
     emoji = r"(?:[^\s])(?<![\w{ascii_printable}])".format(ascii_printable=string.printable)
 
@@ -91,4 +98,5 @@ def GenerateEmojiWordCloud(emjoiCSV, outputDirectory):
     plt.axis("off")
     plt.tight_layout(pad=0)
     plt.savefig(outputDirectory + "/EmojiWordCloud.png", transparent=True)
+    plt.close()
     return True
