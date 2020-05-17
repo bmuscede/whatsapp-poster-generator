@@ -46,7 +46,7 @@ def GenerateWordCloud(df, outputDirectory):
     return True
 
 def GenerateEmojiWordCloud(emjoiCSV, outputDirectory):
-    # Get data directory (using getcwd() is needed to support running example in generated IPython notebook)
+    # Get data directory.
     d = path.dirname(__file__) if "__file__" in locals() else getcwd()
 
     # Start by taking the emjoi CSV and reading it in.
@@ -91,12 +91,6 @@ def GenerateEmojiWordCloud(emjoiCSV, outputDirectory):
     # With the emojis in place, create the word cloud.
     font = path.join(d, 'fonts', 'Symbola', 'Symbola.ttf')
     wordcloud = WordCloud(width=1200, height=1200, background_color=None, mode="RGBA", font_path=font, regexp=emoji, collocations=False).generate(emojiText)
-
-    # Display the generated image.
-    plt.figure(figsize=(50, 50))
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
-    plt.tight_layout(pad=0)
-    plt.savefig(outputDirectory + "/EmojiWordCloud.png", transparent=True)
-    plt.close()
+    wordcloud.recolor(color_func=red_colour_func, random_state=3)
+    wordcloud.to_file(outputDirectory + "/" + "EmojiWordCloud.png")
     return True

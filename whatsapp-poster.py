@@ -20,9 +20,18 @@ from internal.canalysis import GenerateTextingFrequency
 from internal.canalysis import GenerateMessageSentimateProportion
 from internal.canalysis import GenerateWordUseFrequency
 import pandas as pd
+import matplotlib.pyplot as plt
 
+# Perform inital setup.
 locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 pd.options.mode.chained_assignment = None
+params = {"ytick.color" : "w",
+          "xtick.color" : "w",
+          "axes.labelcolor" : "w",
+          "axes.edgecolor" : "w"}
+plt.rcParams.update(params)
+
+##########################################################################################################
 
 def CreateValueDictionary(df):
     valueDict = {}
@@ -112,7 +121,7 @@ if path.exists(args.temp) is not True:
         exit(1)
 
 # Next, checks if we are doing range calculation.
-if len(args.range):
+if args.range is not None and len(args.range):
     if args.range != 'year' and args.range != 'month' and args.range != 'day':
         print("Error: When using range either specify \"year\", \"month\", or \"day\".", file=sys.stderr)
         exit(1)
@@ -132,7 +141,7 @@ if not status:
     exit(2)
 
 # Only do the emoji conversion if we aren't doing range analysis.
-if len(args.range) == 0:
+if args.range is None:
     print("Converting file " + args.input + " to an emoji-based CSV file...")
     status = ConvertToEmojiCSV(args.input, args.temp + "/emoji.csv")
     if not status:
@@ -149,7 +158,7 @@ print()
 print("--2) Running Analysis Tasks--")
 
 # Check if we're doing a range calculation.
-if len(args.range):
+if args.range is not None and len(args.range):
     print( "Doing range output. Output will be created for each " + args.range + "! This may take a while..." )
     masterTemp = args.temp
 

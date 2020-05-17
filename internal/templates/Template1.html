@@ -5,6 +5,8 @@
     <title>:Name1: and :Name2: Poster</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,200;1,400&amp;display=swap"
       rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courgette&amp;display=swap"
+      rel="stylesheet">
     <style>
       @page {
   			size: A4;
@@ -13,20 +15,22 @@
       
       body 
       {
-      	background: rgb(0,0,0);
-				
+				background-image: url('temp-images/Template1Image.jpg');
+        background-size: 100% 100%;
+        
         font-family: 'IBM Plex Sans', sans-serif;
     		color: #FFFFFF;
         
-        margin-top: 80px;
-  			margin-bottom: 80px;
-  			margin-right: 80px;
-  			margin-left: 80px;
+        margin-top: 20px;
+  			margin-bottom: 40px;
+  			margin-right: 40px;
+  			margin-left: 40px;
       }
       
       div#first-title
-      {
-      	font-size: 50px;
+      { 
+        font-family: 'Courgette', cursive;
+      	font-size: 60px;
         text-align: center;
       }
       
@@ -39,7 +43,7 @@
       .divider
 			{
         position: relative;
-				margin-top: 90px;
+        margin: 0px;
 				height: 1px;
 			}
       
@@ -62,7 +66,7 @@
       
       .container .split-box 
       { 
-        width: 540px; 
+        width: 100%; 
         margin: 50px auto; 
         display: table;
       } 
@@ -90,7 +94,8 @@
       
       .container .frequency-box
       {
-        margin: 50px auto; 
+        width: 100%;
+        margin: 50px auto;
         display: table;
       }
       
@@ -103,10 +108,10 @@
       <div class="split-box">
         <div class="split-box-row">
           <div class="box-cell box1"> <img src="images/:FullName1:WordCloud.png"
-              alt=":Name1: WordCloud" style="width: 466px; height: 466px;">
+              alt=":Name1: WordCloud" style="width: 100%; height: auto;">
             :Name1:'s Most Used Words</div>
           <div class="box-cell box2"> <img src="images/:FullName2:WordCloud.png"
-              alt=":Name2: WordCloud" style="width: 466px; height: 466px;">
+              alt=":Name2: WordCloud" style="width: 100%; height: auto;">
             :Name2:'s Most Used Words </div>
         </div>
       </div>
@@ -114,21 +119,22 @@
     <div class="divider div-transparent"></div>
     <div class="container">
       <div class="frequency-box"> <img src="images/TextFrequency.png" alt="TextFrequency"
-          style="width: 1542px; height: 257px; display:block; margin-bottom: 15px;">
-        Messages Per Time of Day </div>
+          style="width: 100%; height: auto; display:block;"><br>
+        Proportion of Messages Per Time of Day </div>
     </div>
     <div class="divider div-transparent"></div>
     <div class="container">
       <div class="split-box">
         <div class="split-box-row">
           <div class="bottom-cell box1"> <img src="images/SentimentProportions.png"
-              alt="SentimentProportions" style="width: 466px; height: 466px;">
-            Sentiment of All Messages Sent</div>
-          <div class="bottom-cell box2"> <img src="images/:FullName2:WordCloud.png"
-              alt=":Name2: WordCloud" style="width: 466px; height: 466px;"> Favourite Words By Person
-          </div>
+              alt="SentimentProportions" style="width: 100%; height: auto;"><br>
+            Message Sentiment</div>
+          <div class="bottom-cell box2"> <img src="images/WordFrequency.png" alt="WordFrequency"
+              style="width: 100%; height: auto;"><br>
+            Favourite Words By Person</div>
           <div class="bottom-cell box3"> <img src="images/EmojiWordCloud.png" alt="EmojiWordCloud"
-              style="width: 466px; height: 466px;"> Common Emojis Used </div>
+              style="width: 75%; height: auto;"><br>
+            Commonly Used Emojis</div>
         </div>
       </div>
     </div>

@@ -161,6 +161,12 @@ def GenerateWordUseFrequency(df, outputDirectory):
 
         data.append(curData)
 
+    # Get the lerngth of the longest word.
+    longest=0
+    for word in topWords:
+        if len(word) > longest:
+            longest = len(word)
+
     # Get the max count for both datasets.
     xmax = 0
     dataOne = max(data[0])
@@ -170,6 +176,10 @@ def GenerateWordUseFrequency(df, outputDirectory):
     else:
         xmax = dataTwo
 
+    # Reverse all the lists.
+    topWords.reverse()
+    data[0].reverse()
+    data[1].reverse()
 
     # Generate the figure.
     plt.figure(figsize=(50, 50), frameon=False)
@@ -182,21 +192,29 @@ def GenerateWordUseFrequency(df, outputDirectory):
     axes[0].set(yticks=topWords, yticklabels=[])
     for yloc in topWords:
         axes[0].annotate(yloc, (0.5, yloc), xycoords=('figure fraction', 'data'),
-                         ha='center', va='center')
+                         ha='center', va='center', color='w')
     axes[0].yaxis.tick_right()
 
     # Remove all spines.
     for ax in axes:
-        ax.tick_params(axis='y', length=0)
-        ax.tick_params(axis='y', length=0)
+        ax.tick_params(axis='y', length=3)
+        ax.tick_params(axis='y', length=3)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['bottom'].set_visible(False)
         ax.spines['left'].set_visible(False)
-
     for ax in axes.flat:
         ax.margins(0.03)
-    fig.subplots_adjust(wspace=0.09)
+
+    # Set the distance between the two plots.
+    wspace=0.09
+    if longest > 6:
+        wspace = wspace + (0.02 * longest)
+    fig.subplots_adjust(wspace=wspace)
+
+    # Fix the plot xlimits.
+    for ax in axes:
+        plt.setp(ax, xlim=xmax)
 
     # Output the final figure.
     plt.tight_layout(pad=0)
