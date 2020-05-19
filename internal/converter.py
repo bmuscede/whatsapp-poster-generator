@@ -2,6 +2,7 @@
 import sys
 import argparse
 import re
+from datetime import datetime
 from dateutil.parser import parse
 
 from internal.canalysis import GetMessageSentiment
@@ -129,30 +130,54 @@ def ConvertToTextualCSV(inputPath, outputPath):
 
     return True
 
-def GenerateEmojiCSVFromDF(df, outputPath):
+def GenerateEmojiCSVByDate(inputPath, outputPath, stopDate):
+    dateMask = "%Y-%m-%d"
+
+    try:
+        waFile = open(inputPath, "r", encoding='utf-8')
+    except IOError:
+        print("Could not open file " + inputPath + "! Please select a proper file for reading.")
+        return False
+
     try:
         waOut = open(outputPath, "w", encoding='utf-16')
     except IOError:
-        print("Could not open output file"+outputPath+" for writing! Please select a proper output file.")
+        print("Could not open output file" + outputPath + " for writing! Please select a proper output file.")
         return False
 
-    # Generate contents.
-    allText = ""
-    for curMessage in df.message:
-        allText += curMessage
+    contents = waFile.readlines()
 
     # Write the header to the output.
     waOut.write("emoji\tfrequency\n")
 
     emojiMap = {}
+    for line in contents:
+        message = ""
 
-    # Iterate and find the emojis.
-    for c in allText:
-        if isEmoji(c):
-            if c in emojiMap:
-                emojiMap[c] += 1
-            else:
-                emojiMap[c] = 1
+        # Check if the line is a new message or a previous message.
+        split = line.split(' - ', 1)
+        if len(split) == 2 and isDate(split[0]):
+            # Check if the date matches our current day.
+            datSplit = split[0].split(',', 1)
+            date = datetime.strptime(datSplit[0], dateMask)
+            if date > stopDate:
+                break
+
+            # We have a new line.
+            split = line.split(': ', 1)
+            if len(split) == 1:
+                continue
+            message = split[1]
+        else:
+            message = line
+
+        # Iterate and find the emojis.
+        for c in message:
+            if isEmoji(c):
+                if c in emojiMap:
+                    emojiMap[c] += 1
+                else:
+                    emojiMap[c] = 1
 
     # Sort map by incidence number.
     emojiMap = {k: v for k, v in sorted(emojiMap.items(), key=lambda item: item[1])}
@@ -161,8 +186,10 @@ def GenerateEmojiCSVFromDF(df, outputPath):
     for emojiItem in emojiMap:
         waOut.write(emojiItem + "\t" + str(emojiMap[emojiItem]) + "\n")
 
-    # Close for writing.
+    # Close for reading/writing.
     waOut.close()
+    waFile.close()
+
     return True
 
 def ConvertToEmojiCSV(inputPath, outputPath):

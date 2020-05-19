@@ -80,7 +80,8 @@ def GenerateEmojiWordCloud(emjoiCSV, outputDirectory):
 
     # Check if there's nothing to output.
     if not len(emojiText):
-        plt.figure(figsize=(50, 50))
+        fig = plt.figure(figsize=(50, 50))
+        fig.suptitle('No Emojis in Current Date Range', fontsize=14, fontweight='bold', y=0.5)
         plt.savefig(outputDirectory + "/EmojiWordCloud.png", transparent=True)
         plt.close()
         return True

@@ -9,7 +9,7 @@ from datetime import datetime
 
 from internal.converter import ConvertToTextualCSV
 from internal.converter import ConvertToEmojiCSV
-from internal.converter import GenerateEmojiCSVFromDF
+from internal.converter import GenerateEmojiCSVByDate
 
 from internal.pdfgen import ConvertHTMLToPDF
 from internal.pdfgen import PrepareHTML
@@ -21,6 +21,7 @@ from internal.canalysis import GenerateMessageSentimateProportion
 from internal.canalysis import GenerateWordUseFrequency
 import pandas as pd
 import matplotlib.pyplot as plt
+import warnings
 
 # Perform inital setup.
 locale.setlocale(locale.LC_ALL, 'en_US.utf8')
@@ -30,6 +31,7 @@ params = {"ytick.color" : "w",
           "axes.labelcolor" : "w",
           "axes.edgecolor" : "w"}
 plt.rcParams.update(params)
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 
 ##########################################################################################################
 
@@ -65,9 +67,13 @@ def CreateValueDictionary(df):
     return valueDict
 
 def DoAnalysis(args, df, verbose = True):
+    if verbose:
+        print()
+        print("--2) Running Analysis Tasks--")
+
     # Generate the word cloud.
     if verbose:
-        print("Creating a word cloud for " + str(len(df.person.unique())) + " people...")
+        print("Creating wordclouds for " + str(len(df.person.unique())) + " people and for emojis...")
     status = GenerateWordCloud(df, args.temp)
     if not status:
         print("Failure generating word cloud! Please try again.", file=sys.stderr)
@@ -100,14 +106,32 @@ def DoAnalysis(args, df, verbose = True):
         print("Failure generating sentiment breakdown! Please try again.", file=sys.stderr)
         exit(2)
 
+    # Close all generated figures.
+    plt.close('all')
+
+def DoOutput(args, verbose = True):
+    if verbose:
+        print()
+        print("--3) Running PDF Generation Tasks--")
+
+    if verbose:
+        print("Generating PDF of poster with semantic analysis...")
+        print()
+    valueDict = CreateValueDictionary(df)
+    status = PrepareHTML("Template1", valueDict, args.temp)
+    if not status:
+        print("Failure creating template for poster. Please check the poster template exists.", file=sys.stderr)
+    ConvertHTMLToPDF(args.temp, args.output)
+
 ##########################################################################################################
 
 # Set up our argument parser to handle the user 
 parser = argparse.ArgumentParser(description='Converts a flat WhatsApp file into a poster used to express interesting information about messages.')
 parser.add_argument('-i', '--input', dest='input', help='input CSV file of WhatsApp conversation', required=True)
-parser.add_argument('-o', '--output', dest='output', help='output PDF of poster showing WhatsApp stats', required=True)
+parser.add_argument('-o', '--output', dest='output', help='output PDF filename or existing directory (if range) showing WhatsApp stats', required=True)
 parser.add_argument('-t', '--temp', dest="temp", help='intermediate folder used to store images and CSV files creatd during analysis', default="temp-output")
 parser.add_argument('-r', '--range', dest="range", help='generate multiple figures over a range')
+parser.add_argument('-a', '--alias', dest='alias', help='alias for name in the form of old-name:new-name', nargs='*')
 
 # Parse the arguments.
 args = parser.parse_args()
@@ -121,9 +145,13 @@ if path.exists(args.temp) is not True:
         exit(1)
 
 # Next, checks if we are doing range calculation.
+# Also checks if the output is valid.
 if args.range is not None and len(args.range):
     if args.range != 'year' and args.range != 'month' and args.range != 'day':
         print("Error: When using range either specify \"year\", \"month\", or \"day\".", file=sys.stderr)
+        exit(1)
+    if not os.path.isdir(args.output):
+        print("Error: When in range mode, you must select an output directory that exists!", file=sys.stderr)
         exit(1)
 
 print("----------------------------------------")
@@ -154,13 +182,24 @@ df = pd.read_csv(args.temp + "/textual.csv", index_col=0, encoding='utf-8')
 print("There are {} messages in the chat!".format(df.shape[0]))
 print("Found {} people in this chat including {}...".format(len(df.person.unique()),
                                                                 ", ".join(df.person.unique()[0:2])))
-print()
-print("--2) Running Analysis Tasks--")
+
+# Note the aliases and change the dataframe.
+if args.alias is not None:
+    for person in df.person.unique():
+        for alias in args.alias:
+            aSplit = alias.split(':')
+            if aSplit[0] == person:
+                print("Changing " + aSplit[0] + " to " + aSplit[1] + " in the final poster...")
+                df['person'] = df['person'].replace(aSplit[0], aSplit[1])
 
 # Check if we're doing a range calculation.
 if args.range is not None and len(args.range):
-    print( "Doing range output. Output will be created for each " + args.range + "! This may take a while..." )
+    print()
+    print("--2) Running Bulk Output Tasks--")
+
+    print("Output will be created for each " + args.range + "! This may take a while...")
     masterTemp = args.temp
+    masterOutput = args.output
 
     # Get the lowest date.
     dateFormat = '%Y-%m-%d'
@@ -182,6 +221,8 @@ if args.range is not None and len(args.range):
         # Ensure we have different data.
         curRows = len(curDF.index)
         if curRows == oldRows:
+            if args.range == 'day':
+                curDate = curDate + relativedelta(days=1)
             continue
         oldRows = curRows
 
@@ -195,29 +236,24 @@ if args.range is not None and len(args.range):
 
         # Last do the analysis.
         print( "Analysis #" + str(curPos + 1) + ": Up to date " + curDate.strftime(dateFormat) + "...")
-        GenerateEmojiCSVFromDF(curDF, args.temp + "/emoji.csv")
+        GenerateEmojiCSVByDate(args.input, args.temp + "/emoji.csv", curDate)
         DoAnalysis(args, curDF, False)
-        curPos += 1
+
+        # Last, do the PDF generation.
+        args.output = masterOutput + "/" + str(curPos) + ".pdf"
+        DoOutput(args, False)
 
         # If we're doing days now, we increment.
+        curPos += 1
         if args.range == 'day':
             curDate = curDate + relativedelta(days=1)
 
     args.temp = masterTemp
-
+    args.output = masterOutput
 else:
+    # Simply do a basic run of the program.
     DoAnalysis(args, df, True)
-
-print()
-print("--3) Running PDF Generation Tasks--")
-
-print("Generating PDF of poster with semantic analysis...")
-print()
-valueDict = CreateValueDictionary(df)
-status = PrepareHTML("Template1", valueDict, args.temp)
-if not status:
-    print("Failure creating template for poster. Please check the poster template exists.", file=sys.stderr)
-ConvertHTMLToPDF(args.output)
+    DoOutput(args, True)
 
 print("All tasks completed successfully. See "+args.output+" for the generated PDF and "+args.temp+" for temp artifacts created!")
 print("Goodbye!")
