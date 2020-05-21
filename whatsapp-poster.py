@@ -35,7 +35,41 @@ warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 
 ##########################################################################################################
 
-def CreateValueDictionary(df):
+def GetNextBest(df, date, back):
+    dateFormat = '%Y-%m-%d'
+    minDate = datetime.strptime(df['date'].min(), dateFormat)
+    maxDate = datetime.strptime(df['date'].max(), dateFormat)
+
+    noGoodDate = True
+    while noGoodDate:
+        # First, check if we've surpassed the limits.
+        if date < minDate:
+            date = minDate
+            noGoodDate = False
+            continue
+        elif date > maxDate:
+            date = maxDate
+            noGoodDate = False
+            continue
+
+        # Next, look and see if we have data for the current date.
+        dateStr = date.strftime(dateFormat)
+        if df.date.str.contains(dateStr).any():
+            noGoodDate = False
+            continue
+
+        # Check if we're processing a back or forward date.
+        if back:
+            date = date - relativedelta(days=1)
+        else:
+            date = date + relativedelta(days=1)
+
+    return date
+
+def CreateValueDictionary(df, masterDF=None):
+    if masterDF is None:
+        masterDF = df
+
     valueDict = {}
 
     # First, get the two names.
@@ -55,13 +89,33 @@ def CreateValueDictionary(df):
 
     # Get the number of years the messages take place over.
     dateFormat = '%Y-%m-%d'
-    minDate = datetime.strptime(df['date'].min(), dateFormat)
-    maxDate = datetime.strptime(df['date'].max(), dateFormat)
+    minDate = datetime.strptime(masterDF['date'].min(), dateFormat)
+    maxDate = datetime.strptime(masterDF['date'].max(), dateFormat)
     years = relativedelta(maxDate, minDate).years
     months = relativedelta(maxDate, minDate).months
     if months >= 5:
         years += 1
     valueDict['Years'] = str(years)
+
+    # State the maximum current date.
+    valueDict['Date'] = df['date'].max()
+    curDate = maxDate
+
+    # Print the associated back URLs.
+    backDay = GetNextBest(masterDF, curDate - relativedelta(days=1), True)
+    backMonth = GetNextBest(masterDF, curDate - relativedelta(months=1), True)
+    backYear = GetNextBest(masterDF, curDate - relativedelta(years=1), True)
+    valueDict['DayBack'] = backDay.strftime(dateFormat)
+    valueDict['MonthBack'] = backMonth.strftime(dateFormat)
+    valueDict['YearBack'] = backYear.strftime(dateFormat)
+
+    # Print the associated forward URLs.
+    forwardDay = GetNextBest(masterDF, curDate + relativedelta(days=1), False)
+    forwardMonth = GetNextBest(masterDF, curDate + relativedelta(months=1), False)
+    forwardYear = GetNextBest(masterDF, curDate + relativedelta(years=1), False)
+    valueDict['DayForward'] = forwardDay.strftime(dateFormat)
+    valueDict['MonthForward'] = forwardMonth.strftime(dateFormat)
+    valueDict['YearForward'] = forwardYear.strftime(dateFormat)
 
     # Get the number of years the chat is.
     return valueDict
@@ -109,7 +163,7 @@ def DoAnalysis(args, df, verbose = True):
     # Close all generated figures.
     plt.close('all')
 
-def DoOutput(args, verbose = True):
+def DoOutput(args, dataframe, verbose = True, masterDF = None):
     if verbose:
         print()
         print("--3) Running PDF Generation Tasks--")
@@ -117,8 +171,8 @@ def DoOutput(args, verbose = True):
     if verbose:
         print("Generating PDF of poster with semantic analysis...")
         print()
-    valueDict = CreateValueDictionary(df)
-    status = PrepareHTML("Template1", valueDict, args.temp)
+    valueDict = CreateValueDictionary(dataframe, masterDF)
+    status = PrepareHTML(args.template, valueDict, args.temp)
     if not status:
         print("Failure creating template for poster. Please check the poster template exists.", file=sys.stderr)
     ConvertHTMLToPDF(args.temp, args.output)
@@ -132,6 +186,7 @@ parser.add_argument('-o', '--output', dest='output', help='output PDF filename o
 parser.add_argument('-t', '--temp', dest="temp", help='intermediate folder used to store images and CSV files creatd during analysis', default="temp-output")
 parser.add_argument('-r', '--range', dest="range", help='generate multiple figures over a range')
 parser.add_argument('-a', '--alias', dest='alias', help='alias for name in the form of old-name:new-name', nargs='*')
+parser.add_argument('-e', '--template', dest='template', help='the name of the template in the templates folder to use', default='Template1')
 
 # Parse the arguments.
 args = parser.parse_args()
@@ -218,6 +273,8 @@ if args.range is not None and len(args.range):
             curDate = curDate + relativedelta(years=1)
         curDF = df[df['date'] <= curDate.strftime(dateFormat)]
 
+        curDateStr = curDate.strftime(dateFormat)
+
         # Ensure we have different data.
         curRows = len(curDF.index)
         if curRows == oldRows:
@@ -226,7 +283,7 @@ if args.range is not None and len(args.range):
             continue
         oldRows = curRows
 
-        args.temp = masterTemp + "/" + str(curPos)
+        args.temp = masterTemp + "/" + curDateStr
         if path.exists(args.temp) is not True:
             try:
                 os.mkdir(args.temp)
@@ -240,8 +297,8 @@ if args.range is not None and len(args.range):
         DoAnalysis(args, curDF, False)
 
         # Last, do the PDF generation.
-        args.output = masterOutput + "/" + str(curPos) + ".pdf"
-        DoOutput(args, False)
+        args.output = masterOutput + "/" + curDateStr + ".pdf"
+        DoOutput(args, curDF, False, df)
 
         # If we're doing days now, we increment.
         curPos += 1
@@ -253,7 +310,7 @@ if args.range is not None and len(args.range):
 else:
     # Simply do a basic run of the program.
     DoAnalysis(args, df, True)
-    DoOutput(args, True)
+    DoOutput(args, df, True)
 
 print("All tasks completed successfully. See "+args.output+" for the generated PDF and "+args.temp+" for temp artifacts created!")
 print("Goodbye!")

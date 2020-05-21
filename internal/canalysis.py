@@ -42,7 +42,7 @@ def GenerateTextingFrequency(df, outputDirectory):
     # Create the plot.
     plt.figure(figsize=(30,5), frameon=False)
     plt.box(on=False)
-    mFreq.sort_values(by="time", ascending=[False])["message"].plot.line(linewidth="7.0")
+    mFreq.sort_values(by="time", ascending=[False])["message"].plot.line(linewidth="7.0", color='#ef3b2c')
 
     # Remove the tick markers.
     ax = plt.gca()
@@ -59,7 +59,7 @@ def GenerateTextingFrequency(df, outputDirectory):
     ax.tick_params(which='minor', length=0)
     for tick in ax.xaxis.get_minor_ticks():
         tick.label1.set_color('white')
-        tick.label1.set_fontsize(16)
+        tick.label1.set_fontsize(30)
 
     # Now remove all but the second highest y axis tick.
     curTick = -1
@@ -71,7 +71,7 @@ def GenerateTextingFrequency(df, outputDirectory):
             plt.axhline(y=int(ylabels[curTick]), color='w', linestyle='-', linewidth=3, visible=True)
             tick.label1.set_visible(True)
             tick.label1.set_color('white')
-            tick.label1.set_fontsize(16)
+            tick.label1.set_fontsize(30)
             continue
         tick.label1.set_visible(False)
 
@@ -96,9 +96,12 @@ def GenerateMessageSentimateProportion(df, outputDirectory):
     sentimentDF = pd.DataFrame({'sentiment': [goodSentiment, badSentiment, neutralSentiment]},
                                index=labelIndex)
 
+    # Pie chart colors.
+    colours=['#238b45', '#e31a1c', '#ffffb3']
+
     # Create the initial pie chart.
     plt.figure(figsize=(20,20), frameon=False)
-    ax = sentimentDF.plot.pie(y='sentiment', fontsize=0, wedgeprops={"edgecolor":"k", 'linewidth': 1.25, 'linestyle': 'solid', 'antialiased': True})
+    ax = sentimentDF.plot.pie(y='sentiment', colors=colours, fontsize=0, wedgeprops={"edgecolor":"k", 'linewidth': 1.25, 'linestyle': 'solid', 'antialiased': True})
 
     # Configure the legend.
     patches, labels = ax.get_legend_handles_labels()
@@ -139,7 +142,7 @@ def GenerateWordUseFrequency(df, outputDirectory):
 
     # Remove the counts for common words. Get a total count.
     counts = counts.drop(index=commonWords, level=1)
-    totalCount = counts.groupby(level=1).sum().nlargest(30, columns='count')
+    totalCount = counts.groupby(level=1).sum().nlargest(15, columns='count')
 
     # Generate the person data.
     names = []
@@ -161,12 +164,6 @@ def GenerateWordUseFrequency(df, outputDirectory):
 
         data.append(curData)
 
-    # Get the lerngth of the longest word.
-    longest=0
-    for word in topWords:
-        if len(word) > longest:
-            longest = len(word)
-
     # Get the max count for both datasets.
     xmax = 0
     dataOne = max(data[0])
@@ -187,12 +184,16 @@ def GenerateWordUseFrequency(df, outputDirectory):
     axes[0].barh(topWords, data[0], align='center', color='#ef3b2c', edgecolor='#67000d', zorder=10)
     axes[1].barh(topWords, data[1], align='center', color='#807dba', edgecolor='#3f007d', zorder=10)
 
+    # Set title for names.
+    axes[0].set_title(names[0].split(' ')[0], fontsize=18, color='w')
+    axes[1].set_title(names[1].split(' ')[0], fontsize=18, color='w')
+
     # Configure the pyramid.
     axes[0].invert_xaxis()
     axes[0].set(yticks=topWords, yticklabels=[])
     for yloc in topWords:
         axes[0].annotate(yloc, (0.5, yloc), xycoords=('figure fraction', 'data'),
-                         ha='center', va='center', color='w')
+                         ha='center', va='center', color='w', fontsize=18)
     axes[0].yaxis.tick_right()
 
     # Remove all spines.
@@ -206,10 +207,20 @@ def GenerateWordUseFrequency(df, outputDirectory):
     for ax in axes.flat:
         ax.margins(0.03)
 
+    # Set the x axis font size.
+    for ax in axes:
+        for axis in ax.get_xticklabels():
+            axis.set_fontsize(18)
+
+        count = 1
+        for label in ax.xaxis.get_major_ticks():
+            if count % 2 == 0:
+                label.set_visible(False)
+            count += 1
+
     # Set the distance between the two plots.
-    wspace=0.09
-    if longest > 6:
-        wspace = wspace + (0.02 * longest)
+    # TODO: This is a bad hard-coded operation. Change in the future!
+    wspace = 0.45
     fig.subplots_adjust(wspace=wspace)
 
     # Fix the plot xlimits.

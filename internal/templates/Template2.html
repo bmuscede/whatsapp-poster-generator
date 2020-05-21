@@ -17,13 +17,12 @@
       
       body 
       {
-				background-image: url('internal-images/Template1Image.jpg');
-        background-size: auto 110%;
+				background-color: #000000;
        
         font-family: 'IBM Plex Sans', sans-serif;
     		color: #FFFFFF;
         
-				margin-top: 30px;
+				margin-top: 40px;
         margin-bottom: 40px;
         margin-right: 40px;
         margin-left: 40px;
@@ -31,6 +30,7 @@
       
       div#first-title
       { 
+        margin-top: 40px;
         font-family: 'Amatic SC', cursive;
       	font-size: 70px;
         text-align: center;
@@ -38,8 +38,47 @@
       
       div#second-title
       {
+        margin-top: 10px;
         font-size: 26px;
         text-align:center;
+      }
+      
+      .topnav 
+      {
+        background-color: #008CBA;
+        overflow: hidden;
+      }
+      
+      .topnav .left 
+      {
+        float: left;
+        color: #FFFFFF;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 24px;
+      }
+
+      .topnav .right 
+      {
+        float: right;
+        color: #FFFFFF;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 24px;
+      }
+      
+      .topnav a:hover 
+      {
+        background-color: #ddd;
+        color: black;
+      }
+      
+      .topnav a.active 
+      {
+        background-color: #000000;
+        color: white;
       }
       
       .divider
@@ -104,8 +143,14 @@
 		</style>
   </head>
   <body>
-    <div id="first-title">:Name1: and :Name2:</div>
-    <div id="second-title">:Years: Years and :Messages: Messages Later</div>
+    <div class="topnav"> <a href="../:YearBack:/index.html" class="left">&lt;
+        Year</a><a href="../:MonthBack:/index.html" class="left">&lt; Month</a><a
+        href="../:DayBack:/index.html" class="left">&lt; Day</a><a href="../:DayForward:/index.html"
+        class="right"> Day &gt;</a><a href="../:MonthForward:/index.html" class="right">
+        Month &gt;</a><a href="../:YearForward:/index.html" class="right">Year
+        &gt;</a> </div>
+    <div id="first-title">:Name1: and :Name2:: :Date:</div>
+    <div id="second-title">:Messages: Messages Later</div>
     <div class="container">
       <div class="split-box">
         <div class="split-box-row">

@@ -7,7 +7,7 @@ from os import path
 from distutils.dir_util import copy_tree
 
 templateLocation = "internal/templates/"
-outputName = "PosterTemplate.html"
+outputName = "index.html"
 
 # Headless chrome arguments.
 chromeArgs = (
@@ -76,7 +76,7 @@ def PrepareHTML(templateName, values, outputDir):
         file.write(htmlContents)
 
     # Copy the image directory.
-    copy_tree(templateLocation + "images", outputDir + "/internal-images")
+    copy_tree(templateLocation + "internal-images", outputDir + "/internal-images")
     return True
 
 def ConvertHTMLToPDF(inputDir, outputFileName):
