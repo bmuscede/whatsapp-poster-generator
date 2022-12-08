@@ -10,8 +10,15 @@ from internal.canalysis import CleanMessage
 
 from emoji import UNICODE_EMOJI
 
+linkMap = {
+    'tiktok': 'vm.tiktok.com',
+    'reddit': 'redd.it|www.reddit.com',
+    'youtube': 'youtu.be|youtube.com',
+    'media': '<Media omitted>'
+}
+
 def isEmoji(s):
-    return s in UNICODE_EMOJI
+    return s in UNICODE_EMOJI['en']
 
 def isDate(string, fuzzy=False):
     """
@@ -245,3 +252,98 @@ def ConvertToEmojiCSV(inputPath, outputPath):
     waFile.close()
 
     return True
+
+def ConvertToLinkOccurrenceCSV(inputPath, outputPath):
+    try:
+        waFile = open(inputPath, "r", encoding='utf-8')
+    except IOError:
+        print("Could not open file "+inputPath+"! Please select a proper file for reading.")
+        return False
+
+    try:
+        waOut = open(outputPath, "w", encoding='utf-8')
+    except IOError:
+        print("Could not open output file"+outputPath+" for writing! Please select a proper output file.")
+        return False
+
+    contents = waFile.readlines()
+
+    count = 0
+    currentPerson = ""
+    currentDate = ""
+    currentTime = ""
+    currentMessage = ""
+
+    # Write the header to the output.
+    header = "index,person,date,time,"
+    for curKey in linkMap.keys():
+        header += curKey + ","
+    header = header[:-1]
+    waOut.write( header + "\n")
+
+    for line in contents:
+        # Check if the line is a new message or a previous message.
+        split = line.split(' - ', 1)
+        if len(split) == 2 and isDate(split[0]):
+            # Check if we have a previous conversation.
+            if count > 0:
+                # Start counting occurrences
+                occurrenceMap = GetLinkOccurrences(currentMessage)
+
+                # Generate our output.
+                outputStr = str(count)+","+currentPerson+","+currentDate+","+currentTime+","
+                for curValue in occurrenceMap.values():
+                    outputStr += str(curValue) + ","
+                outputStr = outputStr[:-1]
+
+                waOut.write(outputStr + "\n")
+
+            # We have a new conversation.
+            split = line.split(': ', 1)
+            if len(split) == 1:
+                # This likely isn't a valid line.
+                continue
+
+            headerSplit = split[0].split(' - ', 1)
+            dateSplit = headerSplit[0].split(', ', 1)
+
+            # Populate the proper fields.
+            count += 1
+            currentPerson = headerSplit[1]
+            currentDate = dateSplit[0]
+            currentTime = dateSplit[1]
+            currentMessage = split[1]
+        else:
+            currentMessage += line
+
+    # Do one final flush.
+    if count != 0:
+        # Start counting occurrences
+        occurrenceMap = GetLinkOccurrences(currentMessage)
+
+        # Generate our output.
+        outputStr = str(count)+","+currentPerson+","+currentDate+","+currentTime+","
+        for curValue in occurrenceMap.values():
+            outputStr += str(curValue) + ","
+        outputStr = outputStr[:-1]
+
+        waOut.write(outputStr + "\n")
+
+    # Close for reading/writing.
+    waOut.close()
+    waFile.close()
+
+    return True
+  
+def GetLinkOccurrences(currentMessage):
+    occurrenceDict = {}
+    for key in linkMap.keys():
+        curSplit = linkMap[key].split("|")
+
+        count = 0
+        for cur in curSplit:
+            count += currentMessage.count( cur )
+
+        occurrenceDict[key] = count
+
+    return occurrenceDict

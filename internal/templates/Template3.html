@@ -10,100 +10,100 @@
     <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&amp;display=swap"
       rel="stylesheet">
     <style>
-      @page {
-  			size: auto;
-        margin: 0mm;
-			}
+        @page {
+  		    size: auto;
+            margin: 0mm;
+	    }
       
-      body 
-      {
-				background-image: url('internal-images/Template1Image.jpg');
-        background-size: auto 110%;
+        body 
+        {
+	        background-color: #F0EAD6;
+            background-size: auto 110%;
        
-        font-family: 'IBM Plex Sans', sans-serif;
-    		color: #FFFFFF;
+            font-family: 'IBM Plex Sans', sans-serif;
+    	    color: #000000;
         
-				margin-top: 30px;
-        margin-bottom: 40px;
-        margin-right: 40px;
-        margin-left: 40px;
-      }
+			margin-top: 30px;
+            margin-bottom: 40px;
+            margin-right: 40px;
+            margin-left: 40px;
+        }
       
-      div#first-title
-      { 
-        font-family: 'Amatic SC', cursive;
-      	font-size: 70px;
-        text-align: center;
-      }
+        div#first-title
+        { 
+            font-family: 'Amatic SC', cursive;
+      	    font-size: 70px;
+            text-align: center;
+        }
       
-      div#second-title
-      {
-        font-size: 26px;
-        text-align:center;
-      }
+        div#second-title
+        {
+            font-size: 26px;
+            text-align:center;
+        }
       
-      .divider
-			{
-        position: relative;
-        margin: 0px;
-				height: 1px;
-			}
+        .divider
+		{
+            position: relative;
+            margin: 0px;
+			height: 1px;
+		}
       
-      .div-transparent:before
-			{
-				content: "";
-				position: absolute;
-				top: 0;
-				left: 5%;
-				right: 5%;
-				width: 90%;
-				height: 1px;
-				background-image: linear-gradient(to right, transparent, rgb(255,255,255), transparent);
-			}
+        .div-transparent:before
+		{
+			content: "";
+			position: absolute;
+			top: 0;
+			left: 5%;
+			right: 5%;
+			width: 90%;
+			height: 1px;
+			background-image: linear-gradient(to right, transparent, rgb(255,255,255), transparent);
+		}
       
-      .container
-      {
-        text-align: center;
-      }
+        .container
+        {
+            text-align: center;
+        }
       
-      .container .split-box 
-      { 
-        width: 100%; 
-        margin: 50px auto; 
-        display: table;
-      } 
+        .container .split-box 
+        { 
+            width: 100%; 
+            margin: 50px auto; 
+            display: table;
+        } 
       
-      .container .split-box .split-box-row 
-      { 
-        display:table-row; 
-      } 
+        .container .split-box .split-box-row 
+        { 
+            display:table-row; 
+        } 
       
-      .container .split-box .box-cell 
-      { 
-        display:table-cell; 
-        width:50%; 
-        padding:10px; 
-        text-align:center; 
-      } 
+        .container .split-box .box-cell 
+        { 
+            display:table-cell; 
+            width:50%; 
+            padding:10px; 
+            text-align:center; 
+        } 
       
-      .container .split-box .bottom-cell 
-      { 
-        display:table-cell; 
-        width:33%; 
-        padding:10px; 
-        text-align:center; 
-      } 
+        .container .split-box .bottom-cell 
+        { 
+            display:table-cell; 
+            width:33%; 
+            padding:10px; 
+            text-align:center; 
+        } 
       
-      .container .frequency-box
-      {
-        width: 100%;
-        margin: 50px auto;
-        display: table;
-      }
+        .container .frequency-box
+        {
+            width: 100%;
+            margin: 50px auto;
+            display: table;
+        }
       
-		</style>
-  </head>
-  <body>
+	</style>
+</head>
+<body>
     <div id="first-title">:Name1: and :Name2:</div>
     <div id="second-title">:Years: Years and :Messages: Messages Later</div>
     <div class="container">
@@ -118,10 +118,11 @@
     </div>
     <div class="divider div-transparent"></div>
     <div class="container">
-      <div class="frequency-box"> <img src="HourlyAverageTextFrequency.png" alt="TextFrequency"
+      <div class="frequency-box"> <img src="DailyRollingTextFrequency.png" alt="TextFrequency"
           style="width: 80%; height: auto; text-align: center;"><br>
         <br>
-        Number of Messages Per Time of Day </div>
+        Message Frequency Per Day
+      </div>
     </div>
     <div class="divider div-transparent"></div>
     <div class="container">

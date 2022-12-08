@@ -35,6 +35,7 @@ def GenerateWordCloud(df, outputDirectory):
         strippedName = curPerson[0].replace(" ", "")
 
         # Get a mask to use.
+        # TODO: Download this photo in the future.
         mask = np.array(Image.open(requests.get('http://clipart-library.com/images/6ip6RgkKT.png', stream=True).raw))
 
         # Create and generate a word cloud image.

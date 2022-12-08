@@ -1,9 +1,11 @@
 # PyCharm IDE Temporary Files
 .idea
 venv
+.vscode
 
 # Test Text File
-WhatsAppText.txt
+*.txt
+*.pdf
 
 # Output
 Output.pdf

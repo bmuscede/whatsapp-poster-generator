@@ -36,8 +36,9 @@ def GetMessageSentiment(message):
     return analysis.sentiment.polarity
 
 def GenerateTextingFrequency(df, outputDirectory):
-    df.time = pd.to_datetime(df.time)
-    mFreq = df.set_index('time').groupby([pd.Grouper(freq='60Min')]).count()
+    textingFreqDf = df.copy()
+    textingFreqDf.time = pd.to_datetime(textingFreqDf.time)
+    mFreq = textingFreqDf.set_index('time').groupby([pd.Grouper(freq='60Min')]).count()
 
     # Create the plot.
     plt.figure(figsize=(30,5), frameon=False)
@@ -77,7 +78,57 @@ def GenerateTextingFrequency(df, outputDirectory):
 
     # Output the diagram.
     plt.tight_layout(pad=0)
-    plt.savefig(outputDirectory+"/TextFrequency.png", transparent=True)
+    plt.savefig(outputDirectory+"/HourlyAverageTextFrequency.png", transparent=True)
+    plt.close()
+    return True
+
+def GenerateDailyTextingFrequency(df, outputDirectory):
+    textingFreq = df.copy()
+    textingFreq.date = pd.to_datetime(textingFreq.date)
+    tempDf = textingFreq.set_index('date').groupby(['date']).count().reset_index()
+
+    tempDf['rollingCount'] = tempDf.rolling(window='7D', on='date')['message'].mean()
+
+    # Create the plot.
+    plt.figure(figsize=(30,5), frameon=False)
+    plt.box(on=False)
+
+    tempDf.set_index('date')['rollingCount'].plot.line(linewidth="7.0", color='#ef3b2c')
+    
+    # Remove the tick markers.
+    ax = plt.gca()
+    ax.tick_params(axis='both', length=0)
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+
+    # Set the major tick here to be invisible.
+    xticks = ax.xaxis.get_major_ticks()
+    xticks[0].label1.set_visible(False)
+
+    # Set all minor ticks to be large.
+    # For some reason, the time other than the first is considered to be minor.
+    ax.tick_params(which='minor', length=0)
+    for tick in ax.xaxis.get_minor_ticks():
+        tick.label1.set_color('white')
+        tick.label1.set_fontsize(30)
+
+    # Now remove all but the second highest y axis tick.
+    curTick = -1
+    yticks = ax.yaxis.get_major_ticks()
+    ylabels=ax.get_yticks().tolist()
+    for tick in yticks:
+        curTick += 1
+        if curTick + 3 == len(yticks):
+            plt.axhline(y=int(ylabels[curTick]), color='w', linestyle='-', linewidth=3, visible=True)
+            tick.label1.set_visible(True)
+            tick.label1.set_color('white')
+            tick.label1.set_fontsize(30)
+            continue
+        tick.label1.set_visible(False)
+
+    # Output the diagram.
+    plt.tight_layout(pad=0)
+    plt.savefig(outputDirectory+"/DailyRollingTextFrequency.png", transparent=True)
     plt.close()
     return True
 

@@ -10,15 +10,20 @@ from datetime import datetime
 from internal.converter import ConvertToTextualCSV
 from internal.converter import ConvertToEmojiCSV
 from internal.converter import GenerateEmojiCSVByDate
+from internal.converter import ConvertToLinkOccurrenceCSV
 
 from internal.pdfgen import ConvertHTMLToPDF
 from internal.pdfgen import PrepareHTML
+from internal.pdfgen import TranslateTemplateName
+from internal.pdfgen import ListTemplates
 
 from internal.wordcloud import GenerateWordCloud
 from internal.wordcloud import GenerateEmojiWordCloud
 from internal.canalysis import GenerateTextingFrequency
 from internal.canalysis import GenerateMessageSentimateProportion
 from internal.canalysis import GenerateWordUseFrequency
+from internal.canalysis import GenerateDailyTextingFrequency
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
@@ -151,6 +156,12 @@ def DoAnalysis(args, df, verbose = True):
     if not status:
         print("Failure generating text frequency! Please try again.", file=sys.stderr)
         exit(2)
+    if verbose:
+        print("Determining frequency of messages sent per day...")
+    status = GenerateDailyTextingFrequency(df, args.temp)
+    if not status:
+        print("Failure generating text frequency! please try again.", file=sys.stderr)
+        exit(2)
 
     # Run other misc statistics.
     if verbose:
@@ -181,15 +192,32 @@ def DoOutput(args, dataframe, verbose = True, masterDF = None):
 
 # Set up our argument parser to handle the user 
 parser = argparse.ArgumentParser(description='Converts a flat WhatsApp file into a poster used to express interesting information about messages.')
-parser.add_argument('-i', '--input', dest='input', help='input CSV file of WhatsApp conversation', required=True)
-parser.add_argument('-o', '--output', dest='output', help='output PDF filename or existing directory (if range) showing WhatsApp stats', required=True)
+parser.add_argument('-i', '--input', dest='input', help='input CSV file of WhatsApp conversation')
+parser.add_argument('-o', '--output', dest='output', help='output PDF filename or existing directory (if range) showing WhatsApp stats')
 parser.add_argument('-t', '--temp', dest="temp", help='intermediate folder used to store images and CSV files creatd during analysis', default="temp-output")
 parser.add_argument('-r', '--range', dest="range", help='generate multiple figures over a range')
 parser.add_argument('-a', '--alias', dest='alias', help='alias for name in the form of old-name:new-name', nargs='*')
-parser.add_argument('-e', '--template', dest='template', help='the name of the template in the templates folder to use', default='Template1')
+parser.add_argument('-e', '--template', dest='template', help='the name of the template in the templates folder to use', default='RegularPoster')
+parser.add_argument('-l', '--list', dest='list', help='list all available templates', action='store_true', default=False)
 
 # Parse the arguments.
 args = parser.parse_args()
+
+# Print the title.
+print("----------------------------------------")
+print("WhatsApp Poster/Conversation Analyzer\n")
+print("By: Bryan Muscedere")
+print("----------------------------------------")
+
+# If a user wanted to list templates, we can do this here and ignore all other options.
+if args.list is True:
+    posterList, rangeList = ListTemplates(False)
+    if posterList == "":
+        print("Error: Template list cannot be read. Please try reinstalling!", file=sys.stderr)
+        exit(1)
+    
+    print(posterList + "\n" + rangeList + "\nGoodbye!")
+    exit(0)
 
 # Check if the temp directory exists.
 if path.exists(args.temp) is not True:
@@ -198,6 +226,11 @@ if path.exists(args.temp) is not True:
     except OSError:
         print("Error: Could not create directory for temporary files.", file=sys.stderr)
         exit(1)
+
+# Check if a user set the input or output directories.
+if args.input == "" or args.output == "":
+    print("Error: Input and output files are required. Use --input and --output to set those filenames.", file=sys.stderr)
+    exit(1)
 
 # Next, checks if we are doing range calculation.
 # Also checks if the output is valid.
@@ -209,16 +242,26 @@ if args.range is not None and len(args.range):
         print("Error: When in range mode, you must select an output directory that exists!", file=sys.stderr)
         exit(1)
 
-print("----------------------------------------")
-print("WhatsApp Poster/Conversation Analyzer\n")
-print("By: Bryan Muscedere")
-print("----------------------------------------")
+# Last, check if we can translate our specified template file.
+if TranslateTemplateName(args.template) == "":
+    print("Error: Template \'" + args.template + "\' does not exist. Available templates are below.", file=sys.stderr)
+    posterT, rangeT = ListTemplates(True)
+    print(posterT + "\n", file=sys.stderr)
+    print(rangeT, file=sys.stderr)
+    exit(1)
 
 print("--1) Running Load Tasks--")
 
 # Convert to a textual file.
 print("Converting file " + args.input + " to a CSV file...")
 status = ConvertToTextualCSV(args.input, args.temp + "/textual.csv")
+if not status:
+    print("Failure processing file! Please try again.", file=sys.stderr)
+    exit(2)
+
+# Convert to a link information file.
+print("Converting file " + args.input + " to a link information CSV file...")
+status = ConvertToLinkOccurrenceCSV(args.input, args.temp + "/links.csv")
 if not status:
     print("Failure processing file! Please try again.", file=sys.stderr)
     exit(2)

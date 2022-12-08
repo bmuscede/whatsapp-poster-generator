@@ -3,10 +3,12 @@ from weasyprint import HTML
 import os
 import sys
 import subprocess
+import json
 from os import path
 from distutils.dir_util import copy_tree
 
 templateLocation = "internal/templates/"
+templateJSON = templateLocation + "templates.json"
 outputName = "index.html"
 
 # Headless chrome arguments.
@@ -57,9 +59,57 @@ def findExecutable(executable, path=None):
     else:
         return None
 
+def TranslateTemplateName(templateName):
+    # Check for the template.
+    if not path.exists(templateJSON):
+        return ""
+    
+    with open(templateJSON, 'r') as file:
+        jsonContents = json.load(file)
+        for curTemplate in jsonContents['Templates']:
+            if curTemplate['Name'] == templateName:
+                return curTemplate['Path']
+
+    return ""
+    
+def ListTemplates(shortList):
+    # Check for the template.
+    if not path.exists(templateJSON):
+        return ""
+
+    posterTemplates = "Poster Templates:\n"
+    rangeTemplates = "Range-Based Templates:\n"
+    if shortList is True:
+        posterTemplates += "\t"
+        rangeTemplates += "\t"
+
+    # Build the template list.
+    with open(templateJSON, 'r') as file:
+        jsonContents = json.load(file)
+        for curTemplate in jsonContents['Templates']:
+            if shortList is True:
+                if curTemplate['Type'] == "Poster":
+                    posterTemplates += curTemplate['Name'] + ", "
+                elif curTemplate['Type'] == "Range":
+                    rangeTemplates += curTemplate['Name'] + ", "
+            else:
+                curStr = "\t- " + curTemplate['Name'] + ":\n\t\tPath: " + curTemplate['Path'] + "\n\t\tDescription: " + curTemplate['Description'] + "\n"
+                if curTemplate['Type'] == "Poster":
+                    posterTemplates += curStr
+                elif curTemplate['Type'] == "Range":
+                    rangeTemplates += curStr
+    
+    return posterTemplates, rangeTemplates
+
+
 def PrepareHTML(templateName, values, outputDir):
+    # Translate the template name.
+    templateFileName = TranslateTemplateName(templateName)
+    if templateFileName == "":
+        return False
+
     # Start by taking the selected template and moving it over.
-    filename = templateLocation + templateName + ".html"
+    filename = templateLocation + templateFileName 
     if not path.exists(filename):
         return False
 

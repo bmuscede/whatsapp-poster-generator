@@ -1,0 +1,25 @@
+{
+    "Templates": [
+        {
+            "Name": "RegularPoster",
+            "Path": "Template1,html",
+            "FontColour": "#FFFFFF",
+            "Type": "Poster",
+            "Description": "A template for a regular poster generation. Contains basic diagrams."
+        },
+        {
+            "Name": "RegularRange",
+            "Path": "Template2.html",
+            "FontColour": "#FFFFFF",
+            "Type": "Range",
+            "Description": "A template for regular range generation. Contains basic diagrams and site navigation."
+        },
+        {
+            "Name": "WhitePoster",
+            "Path": "Template3.html",
+            "FontColour": "#000000",
+            "Type": "Poster",
+            "Description": "A template for off white poster generation. Contains some newer diagrams."
+        }
+    ]
+}
